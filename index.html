@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Updated the title of the web page -->
+    <title>HUNTING ETH_OS CODE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #e0f7fa;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #8c603b;
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        p#status {
+            font-size: 1.2em;
+            color: #6a4428;
+            margin-bottom: 2em;
+        }
+
+        .game-container {
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .info-panels {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .score-panel, .timer-panel {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.2em;
+        }
+        
+        .timer-panel {
+            text-align: left;
+        }
+        
+        .score-panel {
+            text-align: right;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .egg {
+            width: 100%;
+            padding-bottom: 100%;
+            position: relative;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .egg:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+
+        .egg.cracked {
+            background-color: #f0f0f0;
+            transform: scale(0.95);
+            box-shadow: none;
+            cursor: not-allowed;
+            animation: crack 0.5s ease-in-out;
+        }
+        
+        .egg.found-code {
+            background-color: #d4edda;
+        }
+
+        @keyframes crack {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(5deg) scale(1.1); }
+            50% { transform: rotate(-5deg) scale(1.1); }
+            75% { transform: rotate(5deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(0.95); }
+        }
+        
+        .egg-content {
+            font-size: 0.5em;
+            color: #555;
+            font-weight: bold;
+            margin-top: -10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .win-message {
+            margin-top: 2em;
+            font-size: 1.5em;
+            color: #28a745;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .win-message.show {
+            display: block;
+            animation: bounceIn 0.8s;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .win-code {
+            font-size: 1.8em;
+            color: #007bff;
+            background-color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .user-id-display {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #6a4428;
+            word-break: break-all;
+        }
+
+        /* Leaderboard Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: #8c603b;
+            margin-bottom: 20px;
+        }
+
+        .modal-content .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-content .close-button:hover,
+        .modal-content .close-button:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .leaderboard-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .leaderboard-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leaderboard-list li:last-child {
+            border-bottom: none;
+        }
+
+        .leaderboard-list li .score-entry {
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        button {
+            margin-top: 2em;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Group the buttons together */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 2em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Updated the main game title -->
+    <h1>HUNTING ETH_OS CODE 🔨</h1>
+    <p id="status">Break the eggs to find the hidden code!</p>
+
+    <div class="info-panels">
+        <div id="timerPanel" class="timer-panel">Time: 5s</div>
+        <div id="scorePanel" class="score-panel">Score: 0</div>
+    </div>
+
+    <div class="game-container">
+        <div class="game-grid">
+            <!-- Eggs will be generated here by JavaScript -->
+        </div>
+    </div>
+
+    <div id="winMessage" class="win-message">
+        <!-- The win message will appear here -->
+    </div>
+    
+    <div class="button-group">
+        <button id="resetButton">Reset Game</button>
+        <button id="showLeaderboardButton">Show Leaderboard</button>
+    </div>
+
+    <div id="userIdDisplay" class="user-id-display"></div>
+
+    <!-- The Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Leaderboard</h2>
+            <ul id="leaderboardList" class="leaderboard-list">
+                <!-- Leaderboard scores will be populated here -->
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase from the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const gameGrid = document.querySelector('.game-grid');
+            const resetButton = document.getElementById('resetButton');
+            const statusMessage = document.getElementById('status');
+            const winMessage = document.getElementById('winMessage');
+            const scorePanel = document.getElementById('scorePanel');
+            const timerPanel = document.getElementById('timerPanel');
+            const showLeaderboardButton = document.getElementById('showLeaderboardButton');
+            const leaderboardModal = document.getElementById('leaderboardModal');
+            const closeButton = document.querySelector('.close-button');
+            const leaderboardList = document.getElementById('leaderboardList');
+            const userIdDisplay = document.getElementById('userIdDisplay');
+
+            const totalEggs = 16;
+            const initialTime = 5;
+            let hiddenCodeIndex;
+            let gameActive = true;
+            let timeLeft;
+            let countdownInterval;
+            let score;
+            let audioContext;
+            let db;
+            let auth;
+            let userId;
+
+            // Initialize Firebase
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                // Sign in the user
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Listen for auth state changes and set the user ID
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = `Your User ID: ${userId}`;
+                        // Start listening for leaderboard changes after auth
+                        listenForLeaderboardUpdates();
+                    } else {
+                        // User is signed out, or failed to sign in
+                        userId = null;
+                        userIdDisplay.textContent = 'User ID: N/A';
+                    }
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+
+            const codes = [
+                'B1U4H', 'K3Y4M', 'F1L3N', 'P0T4S', 'Z7F4S'
+            ];
+
+            const getRandomCode = () => {
+                return codes[Math.floor(Math.random() * codes.length)];
+            };
+            
+            const playBreakSound = () => {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            };
+
+            const playClapSound = () => {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const createClick = (time) => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(1000, time);
+                    gainNode.gain.setValueAtTime(0.5, time);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    oscillator.start(time);
+                    oscillator.stop(time + 0.05);
+                };
+                const currentTime = audioContext.currentTime;
+                createClick(currentTime);
+                createClick(currentTime + 0.1);
+                createClick(currentTime + 0.2);
+                createClick(currentTime + 0.3);
+            };
+
+            const saveScore = async (finalScore) => {
+                if (!db || !userId) {
+                    console.error("Firebase not initialized or user not authenticated.");
+                    return;
+                }
+                const scoreDocRef = doc(collection(db, `artifacts/${appId}/public/data/scores`), userId);
+                try {
+                    await setDoc(scoreDocRef, {
+                        userId: userId,
+                        score: finalScore,
+                        timestamp: Date.now()
+                    });
+                    console.log("Score saved successfully!");
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                }
+            };
+            
+            const listenForLeaderboardUpdates = () => {
+                if (!db) {
+                    console.error("Firestore is not initialized.");
+                    return;
+                }
+
+                const leaderboardRef = collection(db, `artifacts/${appId}/public/data/scores`);
+                onSnapshot(leaderboardRef, (snapshot) => {
+                    const scores = [];
+                    snapshot.forEach((doc) => {
+                        scores.push(doc.data());
+                    });
+                    
+                    // Sort scores in descending order
+                    scores.sort((a, b) => b.score - a.score);
+
+                    // Update the leaderboard UI
+                    leaderboardList.innerHTML = '';
+                    scores.slice(0, 10).forEach((scoreEntry) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${scoreEntry.userId.substring(0, 8)}...</span><span class="score-entry">${scoreEntry.score}</span>`;
+                        leaderboardList.appendChild(li);
+                    });
+                });
+            };
+
+            const initializeGame = () => {
+                gameGrid.innerHTML = '';
+                hiddenCodeIndex = Math.floor(Math.random() * totalEggs);
+                statusMessage.textContent = 'Break the eggs to find the hidden code!';
+                winMessage.classList.remove('show');
+                winMessage.innerHTML = '';
+                scorePanel.textContent = 'Score: 0';
+                gameActive = true;
+                
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                timeLeft = initialTime;
+                timerPanel.textContent = 'Time: ' + timeLeft + 's';
+
+                countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    timerPanel.textContent = 'Time: ' + timeLeft + 's';
+                    if (timeLeft <= 0) {
+                        handleTimeUp();
+                    }
+                }, 1000);
+                
+                for (let i = 0; i < totalEggs; i++) {
+                    const egg = document.createElement('div');
+                    egg.classList.add('egg');
+                    egg.innerHTML = '🥚';
+                    egg.dataset.index = i;
+                    egg.addEventListener('click', handleEggClick);
+                    gameGrid.appendChild(egg);
+                }
+            };
+            
+            const handleTimeUp = () => {
+                clearInterval(countdownInterval);
+                gameActive = false;
+                statusMessage.textContent = 'Time\'s up! The game is over.';
+                
+                winMessage.innerHTML = '';
+                winMessage.classList.add('show');
+                winMessage.innerHTML = `<div>Your final score is: 0</div>`;
+
+                document.querySelectorAll('.egg').forEach(egg => {
+                    egg.removeEventListener('click', handleEggClick);
+                    egg.style.cursor = 'not-allowed';
+                });
+            };
+
+            const handleEggClick = async (event) => {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+
+                if (!gameActive) return;
+
+                const clickedEgg = event.target;
+                const index = parseInt(clickedEgg.dataset.index);
+
+                if (clickedEgg.classList.contains('cracked')) {
+                    return;
+                }
+
+                clickedEgg.classList.add('cracked');
+
+                if (index === hiddenCodeIndex) {
+                    clearInterval(countdownInterval);
+                    
+                    const secretCode = getRandomCode();
+                    
+                    score = Math.max(0, timeLeft * 100);
+
+                    clickedEgg.innerHTML = '👏<div class="egg-content">CODE</div>';
+                    clickedEgg.classList.add('found-code');
+                    statusMessage.textContent = 'You succeeded! The code has been found.';
+                    
+                    scorePanel.textContent = 'Score: ' + score;
+                    
+                    playClapSound();
+                    
+                    winMessage.innerHTML = `🎉 Congratulations you found the ETHOS CODE 🎉
+                                           <div id="winCode" class="win-code">${secretCode}</div>
+                                           <div>Your final score is: ${score}</div>`;
+                    winMessage.classList.add('show');
+                    
+                    gameActive = false;
+                    
+                    document.querySelectorAll('.egg').forEach(egg => {
+                        egg.removeEventListener('click', handleEggClick);
+                    });
+
+                    // Save the score to Firestore
+                    await saveScore(score);
+
+                } else {
+                    playBreakSound();
+                    clickedEgg.innerHTML = '💥<div class="egg-content">ZONK</div>';
+                    statusMessage.textContent = 'This egg is empty. Try again!';
+                }
+            };
+
+            resetButton.addEventListener('click', initializeGame);
+            
+            showLeaderboardButton.addEventListener('click', () => {
+                leaderboardModal.style.display = 'flex';
+            });
+
+            closeButton.addEventListener('click', () => {
+                leaderboardModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', (event) => {
+                if (event.target === leaderboardModal) {
+                    leaderboardModal.style.display = 'none';
+                }
+            });
+
+            initializeGame();
+        });
+    </script>
+</body>
+</html>
